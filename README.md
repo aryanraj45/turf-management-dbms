@@ -605,11 +605,11 @@ dbms project/
 
 | Name | Roll Number | Contribution |
 |---|---|---|
-| | | |
+| Raj Aryan | 2024UIC4038 | Database Design, Frontend & Backend Development |
 | | | |
 | | | |
 
-> *Fill in team details before submission.*
+> *Team detail filled.*
 
 ---
 
