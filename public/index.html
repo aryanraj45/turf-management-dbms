@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Turf Management System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0e1a;
+      --surface: #111827;
+      --surface-2: #1a2235;
+      --border: #1e293b;
+      --text: #e2e8f0;
+      --text-dim: #94a3b8;
+      --accent: #22d3ee;
+      --accent-glow: rgba(34, 211, 238, 0.15);
+      --green: #34d399;
+      --amber: #fbbf24;
+      --rose: #fb7185;
+      --purple: #a78bfa;
+      --radius: 16px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* animated gradient bg */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 30% 40%, rgba(34, 211, 238, 0.04) 0%, transparent 50%),
+                  radial-gradient(circle at 70% 60%, rgba(167, 139, 250, 0.04) 0%, transparent 50%);
+      animation: bgShift 20s ease-in-out infinite alternate;
+      z-index: -1;
+    }
+    @keyframes bgShift {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(5%, -3%); }
+    }
+
+    header {
+      padding: 28px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10, 14, 26, 0.8);
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 22px;
+      letter-spacing: -0.5px;
+    }
+    .logo-icon {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+    }
+    .nav-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 4px;
+      border: 1px solid var(--border);
+    }
+    .nav-tab {
+      padding: 8px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-dim);
+      transition: all 0.25s ease;
+      border: none;
+      background: none;
+    }
+    .nav-tab:hover { color: var(--text); }
+    .nav-tab.active {
+      background: var(--accent);
+      color: var(--bg);
+      font-weight: 600;
+    }
+
+    main { padding: 32px 40px; max-width: 1400px; margin: 0 auto; }
+
+    /* Stat Cards Row */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s ease, border-color 0.3s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent);
+    }
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .stat-card:nth-child(1)::after { background: linear-gradient(90deg, var(--accent), var(--green)); }
+    .stat-card:nth-child(2)::after { background: linear-gradient(90deg, var(--purple), var(--rose)); }
+    .stat-card:nth-child(3)::after { background: linear-gradient(90deg, var(--amber), var(--rose)); }
+    .stat-card:nth-child(4)::after { background: linear-gradient(90deg, var(--green), var(--accent)); }
+    .stat-card:nth-child(5)::after { background: linear-gradient(90deg, var(--rose), var(--amber)); }
+
+    .stat-label { font-size: 13px; color: var(--text-dim); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-value { font-size: 32px; font-weight: 800; margin-top: 8px; letter-spacing: -1px; }
+    .stat-value.revenue { color: var(--green); }
+    .stat-value.warn { color: var(--amber); }
+
+    /* Section */
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-title .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.5); }
+    }
+
+    /* Tables */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 40px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    thead { background: var(--surface-2); }
+    th {
+      padding: 14px 20px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-dim);
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 14px 20px;
+      font-size: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(34, 211, 238, 0.03); }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+    .badge-confirmed { background: rgba(34, 211, 238, 0.15); color: var(--accent); }
+    .badge-completed { background: rgba(52, 211, 153, 0.15); color: var(--green); }
+    .badge-cancelled { background: rgba(251, 113, 133, 0.15); color: var(--rose); }
+    .badge-pending   { background: rgba(251, 191, 36, 0.15);  color: var(--amber); }
+    .badge-cash      { background: rgba(148, 163, 184, 0.15); color: var(--text-dim); }
+    .badge-upi       { background: rgba(167, 139, 250, 0.15); color: var(--purple); }
+    .badge-card      { background: rgba(34, 211, 238, 0.15);  color: var(--accent); }
+    .badge-netbanking { background: rgba(52, 211, 153, 0.15); color: var(--green); }
+
+    /* Page sections */
+    .page { display: none; }
+    .page.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Revenue bars */
+    .rev-bar-wrap { margin-bottom: 32px; }
+    .rev-bar-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+    .rev-bar-label {
+      min-width: 160px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .rev-bar-track {
+      flex: 1;
+      height: 28px;
+      background: var(--surface-2);
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+    .rev-bar-fill {
+      height: 100%;
+      border-radius: 8px;
+      transition: width 1s ease;
+      display: flex;
+      align-items: center;
+      padding-left: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--bg);
+      min-width: fit-content;
+    }
+    .rev-bar-fill.c1 { background: linear-gradient(90deg, var(--accent), #06b6d4); }
+    .rev-bar-fill.c2 { background: linear-gradient(90deg, var(--purple), #8b5cf6); }
+    .rev-bar-fill.c3 { background: linear-gradient(90deg, var(--green), #10b981); }
+    .rev-bar-fill.c4 { background: linear-gradient(90deg, var(--amber), #f59e0b); }
+
+    .rev-bar-amount {
+      min-width: 100px;
+      text-align: right;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-dim);
+    }
+
+    /* Forms */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .btn-submit {
+      padding: 12px 32px;
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      color: var(--bg);
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.3s;
+    }
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px var(--accent-glow);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      padding: 14px 24px;
+      background: var(--surface);
+      border: 1px solid var(--green);
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--green);
+      transform: translateY(120px);
+      opacity: 0;
+      transition: all 0.4s ease;
+      z-index: 999;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    @media (max-width: 768px) {
+      header { padding: 16px 20px; flex-direction: column; gap: 16px; }
+      main { padding: 20px; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">⚽</div>
+    TurfHub
+  </div>
+  <nav class="nav-tabs" id="navTabs">
+    <button class="nav-tab active" data-page="dashboard">Dashboard</button>
+    <button class="nav-tab" data-page="bookings">Bookings</button>
+    <button class="nav-tab" data-page="turfs">Turfs</button>
+    <button class="nav-tab" data-page="customers">Customers</button>
+    <button class="nav-tab" data-page="payments">Payments</button>
+  </nav>
+</header>
+
+<main>
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="stats-grid" id="statsGrid"></div>
+    <div class="section-title"><span class="dot"></span> Revenue by Turf</div>
+    <div class="rev-bar-wrap" id="revBars"></div>
+    <div class="section-title"><span class="dot"></span> Revenue by Sport</div>
+    <div class="rev-bar-wrap" id="sportBars"></div>
+  </div>
+
+  <!-- BOOKINGS -->
+  <div class="page" id="page-bookings">
+    <div class="section-title"><span class="dot"></span> All Bookings</div>
+    <div class="table-wrap"><table id="bookingsTable"><thead><tr>
+      <th>ID</th><th>Customer</th><th>Turf</th><th>Sport</th><th>Date</th><th>Time</th><th>Amount</th><th>Status</th>
+    </tr></thead><tbody></tbody></table></div>
+  </div>
+
+  <!-- TURFS -->
+  <div class="page" id="page-turfs">
+    <div class="section-title"><span class="dot"></span> Add New Turf</div>
+    <form id="turfForm">
+      <div class="form-grid">
+        <div class="form-group"><label>Name</label><input name="name" required placeholder="e.g. Green Arena" /></div>
+        <div class="form-group"><label>Location</label><input name="location" required placeholder="e.g. Sector 62, Noida" /></div>
+        <div class="form-group"><label>Sport Type</label><input name="sport_type" required placeholder="e.g. Football" /></div>
+        <div class="form-group"><label>Price / Hour (₹)</label><input name="price_per_hour" type="number" step="0.01" required placeholder="1200" /></div>
+      </div>
+      <button type="submit" class="btn-submit">Add Turf</button>
+    </form>
+    <br />
+    <div class="section-title"><span class="dot"></span> All Turfs</div>
+    <div class="table-wrap"><table id="turfsTable"><thead><tr>
+      <th>ID</th><th>Name</th><th>Location</th><th>Sport</th><th>₹ / Hour</th><th>Active</th>
+    </tr></thead><tbody></tbody></table></div>
+  </div>
+
+  <!-- CUSTOMERS -->
+  <div class="page" id="page-customers">
+    <div class="section-title"><span class="dot"></span> Add New Customer</div>
+    <form id="customerForm">
+      <div class="form-grid">
+        <div class="form-group"><label>Name</label><input name="name" required placeholder="Full name" /></div>
+        <div class="form-group"><label>Email</label><input name="email" type="email" required placeholder="email@example.com" /></div>
+        <div class="form-group"><label>Phone</label><input name="phone" required placeholder="9876543210" /></div>
+      </div>
+      <button type="submit" class="btn-submit">Add Customer</button>
+    </form>
+    <br />
+    <div class="section-title"><span class="dot"></span> All Customers</div>
+    <div class="table-wrap"><table id="customersTable"><thead><tr>
+      <th>ID</th><th>Name</th><th>Email</th><th>Phone</th>
+    </tr></thead><tbody></tbody></table></div>
+  </div>
+
+  <!-- PAYMENTS -->
+  <div class="page" id="page-payments">
+    <div class="section-title"><span class="dot"></span> All Payments</div>
+    <div class="table-wrap"><table id="paymentsTable"><thead><tr>
+      <th>ID</th><th>Booking</th><th>Customer</th><th>Turf</th><th>Amount</th><th>Method</th><th>Status</th>
+    </tr></thead><tbody></tbody></table></div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = "";
+
+// Navigation
+document.getElementById("navTabs").addEventListener("click", (e) => {
+  if (!e.target.classList.contains("nav-tab")) return;
+  document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  e.target.classList.add("active");
+  document.getElementById("page-" + e.target.dataset.page).classList.add("active");
+  loadPage(e.target.dataset.page);
+});
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
+}
+
+function badge(value, type) {
+  return `<span class="badge badge-${value}">${value}</span>`;
+}
+
+async function loadPage(page) {
+  if (page === "dashboard") loadDashboard();
+  else if (page === "bookings") loadBookings();
+  else if (page === "turfs") loadTurfs();
+  else if (page === "customers") loadCustomers();
+  else if (page === "payments") loadPayments();
+}
+
+async function loadDashboard() {
+  const stats = await fetch(API + "/api/stats/dashboard").then(r => r.json());
+  document.getElementById("statsGrid").innerHTML = `
+    <div class="stat-card"><div class="stat-label">Total Turfs</div><div class="stat-value">${stats.total_turfs}</div></div>
+    <div class="stat-card"><div class="stat-label">Customers</div><div class="stat-value">${stats.total_customers}</div></div>
+    <div class="stat-card"><div class="stat-label">Bookings</div><div class="stat-value">${stats.total_bookings}</div></div>
+    <div class="stat-card"><div class="stat-label">Total Revenue</div><div class="stat-value revenue">₹${Number(stats.total_revenue).toLocaleString()}</div></div>
+    <div class="stat-card"><div class="stat-label">Pending Payments</div><div class="stat-value warn">${stats.pending_payments}</div></div>
+  `;
+
+  const revData = await fetch(API + "/api/stats/revenue-by-turf").then(r => r.json());
+  const maxRev = Math.max(...revData.map(r => Number(r.total_revenue)), 1);
+  const colors = ["c1","c2","c3","c4"];
+  document.getElementById("revBars").innerHTML = revData.map((r, i) => `
+    <div class="rev-bar-item">
+      <div class="rev-bar-label">${r.turf_name}</div>
+      <div class="rev-bar-track">
+        <div class="rev-bar-fill ${colors[i % 4]}" style="width:${(Number(r.total_revenue) / maxRev * 100).toFixed(1)}%">
+          ${r.total_bookings} bookings
+        </div>
+      </div>
+      <div class="rev-bar-amount">₹${Number(r.total_revenue).toLocaleString()}</div>
+    </div>
+  `).join("");
+
+  const sportData = await fetch(API + "/api/stats/revenue-by-sport").then(r => r.json());
+  const maxSport = Math.max(...sportData.map(r => Number(r.total_revenue)), 1);
+  document.getElementById("sportBars").innerHTML = sportData.map((r, i) => `
+    <div class="rev-bar-item">
+      <div class="rev-bar-label">${r.sport_type}</div>
+      <div class="rev-bar-track">
+        <div class="rev-bar-fill ${colors[(i+1) % 4]}" style="width:${(Number(r.total_revenue) / maxSport * 100).toFixed(1)}%">
+          ${r.bookings} bookings
+        </div>
+      </div>
+      <div class="rev-bar-amount">₹${Number(r.total_revenue).toLocaleString()}</div>
+    </div>
+  `).join("");
+}
+
+async function loadBookings() {
+  const data = await fetch(API + "/api/bookings").then(r => r.json());
+  document.querySelector("#bookingsTable tbody").innerHTML = data.map(b => `<tr>
+    <td>${b.booking_id}</td><td>${b.customer_name}</td><td>${b.turf_name}</td><td>${b.sport_type}</td>
+    <td>${b.booking_date?.slice(0,10)}</td><td>${b.start_time?.slice(0,5)} – ${b.end_time?.slice(0,5)}</td>
+    <td>₹${Number(b.total_amount).toLocaleString()}</td><td>${badge(b.status)}</td>
+  </tr>`).join("");
+}
+
+async function loadTurfs() {
+  const data = await fetch(API + "/api/turfs").then(r => r.json());
+  document.querySelector("#turfsTable tbody").innerHTML = data.map(t => `<tr>
+    <td>${t.turf_id}</td><td>${t.name}</td><td>${t.location}</td><td>${t.sport_type}</td>
+    <td>₹${Number(t.price_per_hour).toLocaleString()}</td><td>${t.is_active ? "✅" : "❌"}</td>
+  </tr>`).join("");
+}
+
+async function loadCustomers() {
+  const data = await fetch(API + "/api/customers").then(r => r.json());
+  document.querySelector("#customersTable tbody").innerHTML = data.map(c => `<tr>
+    <td>${c.customer_id}</td><td>${c.name}</td><td>${c.email}</td><td>${c.phone}</td>
+  </tr>`).join("");
+}
+
+async function loadPayments() {
+  const data = await fetch(API + "/api/payments").then(r => r.json());
+  document.querySelector("#paymentsTable tbody").innerHTML = data.map(p => `<tr>
+    <td>${p.payment_id}</td><td>#${p.booking_id}</td><td>${p.customer_name}</td><td>${p.turf_name}</td>
+    <td>₹${Number(p.amount).toLocaleString()}</td><td>${badge(p.payment_method)}</td><td>${badge(p.payment_status)}</td>
+  </tr>`).join("");
+}
+
+// Forms
+document.getElementById("turfForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const body = Object.fromEntries(fd);
+  body.price_per_hour = parseFloat(body.price_per_hour);
+  await fetch(API + "/api/turfs", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(body) });
+  showToast("Turf added successfully!");
+  e.target.reset();
+  loadTurfs();
+});
+
+document.getElementById("customerForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const body = Object.fromEntries(fd);
+  await fetch(API + "/api/customers", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(body) });
+  showToast("Customer added successfully!");
+  e.target.reset();
+  loadCustomers();
+});
+
+// Initial load
+loadDashboard();
+</script>
+</body>
+</html>
